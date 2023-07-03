@@ -188,7 +188,36 @@ const resolvers = {
       // * Guardar el email en minúscula
       temporalCompany.emailManager = temporalCompany.emailManager.toLowerCase();
 
-      return await temporalCompany.save()
+      // * Guardar registro en BD
+
+
+      try {
+        const savedTemporalCompany = await temporalCompany.save()
+        const { emailManager, nameManager, validationCode } = savedTemporalCompany;
+
+
+        const response = await fetch("https://resimpletemporalexpress.onrender.com/api/send-email/validate-code", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mail: emailManager,
+            subject: "Código de verificación en duro",
+            name: nameManager,
+            verificationCode: validationCode
+          }),
+        });
+
+        await response.json();
+
+        return {
+          trying: 3,
+          emailManager
+        };
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 };

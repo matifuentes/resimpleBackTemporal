@@ -13,6 +13,11 @@ const typeDefs = gql`
     trying: Int
   }
 
+  type ReturnTemporalCompany {
+    trying: Int
+    emailManager: String
+  }
+
   type Company {
     _id: ID!
     rutCompany: String
@@ -128,7 +133,7 @@ const typeDefs = gql`
       nameManager: String
       emailManager: String
       password: String
-    ): TemporalCompany
+    ): ReturnTemporalCompany
     addBaseLine (
       rutManager: String
       nameManager: String
