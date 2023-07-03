@@ -204,7 +204,7 @@ const resolvers = {
           },
           body: JSON.stringify({
             mail: emailManager,
-            subject: "Código de verificación en duro",
+            subject: "Código de verificación",
             name: nameManager,
             verificationCode: validationCode
           }),
