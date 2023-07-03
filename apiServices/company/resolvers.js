@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt'
 import { validateRegister, validateLogin } from './validations/company.js'
 import jwt from 'jsonwebtoken'
 import gen6digitsNumber from './utils.js'
+import fetch from 'node-fetch'
 
 const resolvers = {
   Query: {
