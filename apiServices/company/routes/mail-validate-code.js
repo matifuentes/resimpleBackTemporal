@@ -4,7 +4,9 @@ import mailer from '../../../services/mailer/mailer.js'
 const router = express.Router()
 
 router.post('/validate-code', async (req, res) => {
-  const { mail, name, verificationCode } = req.body
+  const { mail, name, validationCode } = req.body
+
+  console.log('validationCode', validationCode)
 
   // * Agregar las options para el envío
   const mailOptions = {
@@ -14,7 +16,7 @@ router.post('/validate-code', async (req, res) => {
     template: 'validate-code',
     context: {
       name,
-      verificationCode
+      validationCode
     }
   }
 

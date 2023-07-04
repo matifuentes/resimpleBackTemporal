@@ -192,7 +192,7 @@ const resolvers = {
           body: JSON.stringify({
             mail: emailManager,
             name: nameManager,
-            verificationCode: validationCode
+            validationCode
           }),
         });
 
@@ -249,7 +249,7 @@ const resolvers = {
           body: JSON.stringify({
             mail: emailManager,
             name: nameManager,
-            verificationCode: validationCode
+            validationCode
           }),
         });
 
