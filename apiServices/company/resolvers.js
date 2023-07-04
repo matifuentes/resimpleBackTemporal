@@ -168,14 +168,16 @@ const resolvers = {
       }
 
       // * Validar si el correo ya existe en Temporal Company
-      const existEmailTemporalCompany = await TemporalCompany.findOne({ emailManager: temporalCompany.emailManager.toLowerCase() });
-      if (existEmailTemporalCompany) {
-        throw new Error('Email ya registrado')
-      }
+      // const existEmailTemporalCompany = await TemporalCompany.findOneAndDelete({ emailManager: temporalCompany.emailManager.toLowerCase() });
+      // if (existEmailTemporalCompany) {
+      //   throw new Error('Email ya registrado')
+      // }
+
+      await TemporalCompany.findOneAndDelete({ emailManager: temporalCompany.emailManager.toLowerCase() });
 
       // * Validar si el correo ya existe en Company
-      const existEmailCompany = await Company.findOne({ emailManager: temporalCompany.emailManager.toLowerCase() })
-      if (existEmailCompany) {
+      const existEmailUser = await User.findOne({ emailManager: temporalCompany.emailManager.toLowerCase() })
+      if (existEmailUser) {
         throw new Error('Email ya registrado')
       }
 
