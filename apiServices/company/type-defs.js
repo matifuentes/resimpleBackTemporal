@@ -13,7 +13,7 @@ const typeDefs = gql`
     trying: Int
   }
 
-  type ReturnTemporalCompany {
+  type ReturnValidationCode {
     trying: Int
     emailManager: String
   }
@@ -133,7 +133,10 @@ const typeDefs = gql`
       nameManager: String
       emailManager: String
       password: String
-    ): ReturnTemporalCompany
+    ): ReturnValidationCode
+    resendValidationCode (
+      emailManager: String!
+    ): ReturnValidationCode
     addBaseLine (
       rutManager: String
       nameManager: String

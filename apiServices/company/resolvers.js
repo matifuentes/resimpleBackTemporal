@@ -5,7 +5,7 @@ import UserCompany from './models/User-Company.js'
 import BaseLine from './models/Base-Line.js'
 import { } from '../../db.js'
 import bcrypt from 'bcrypt'
-import { validateRegister, validateLogin } from './validations/company.js'
+import { validateRegister, validateLogin, validateResendValidationCode } from './validations/company.js'
 import jwt from 'jsonwebtoken'
 import gen6digitsNumber from './utils.js'
 import fetch from 'node-fetch'
@@ -158,6 +158,56 @@ const resolvers = {
 
       return await baseLine.save()
     },
+    resendValidationCode: async (root, args) => {
+      const temporalCompany = new TemporalCompany({ ...args })
+
+      // * Validar Campos
+      const { error } = validateResendValidationCode.validate(args, { abortEarly: false })
+      if (error) {
+        throw new Error(error.details[0].message)
+      }
+
+      // * Validar si el correo ya existe en Users
+      const existEmailUser = await User.findOne({ emailManager: temporalCompany.emailManager.toLowerCase() })
+      if (existEmailUser) {
+        throw new Error('Email ya registrado')
+      }
+
+      // * Generar random de 6 dígitos
+      const validationCodeGen = gen6digitsNumber();
+
+      // * Actualizar data del usuario y enviar correo
+
+      try {
+        const filter = { emailManager: temporalCompany.emailManager.toLowerCase() };
+        const update = { trying: 3, validationCode: validationCodeGen }
+        const updatedTemporalCompany = await TemporalCompany.findOneAndUpdate(filter, update, { new: true });
+        const { trying, emailManager, nameManager, validationCode } = updatedTemporalCompany;
+
+        const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/validate-code`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mail: emailManager,
+            name: nameManager,
+            verificationCode: validationCode
+          }),
+        });
+
+        await response.json();
+
+        return {
+          trying,
+          emailManager
+        }
+
+      } catch (error) {
+        console.log(error)
+      }
+
+    },
     addTemporalCompany: async (root, args) => {
       const temporalCompany = new TemporalCompany({ ...args })
 
@@ -167,15 +217,10 @@ const resolvers = {
         throw new Error(error.details[0].message)
       }
 
-      // * Validar si el correo ya existe en Temporal Company
-      // const existEmailTemporalCompany = await TemporalCompany.findOneAndDelete({ emailManager: temporalCompany.emailManager.toLowerCase() });
-      // if (existEmailTemporalCompany) {
-      //   throw new Error('Email ya registrado')
-      // }
-
+      // * Borrar el registro que coincida con el mail en la tabla TemporalCompany
       await TemporalCompany.findOneAndDelete({ emailManager: temporalCompany.emailManager.toLowerCase() });
 
-      // * Validar si el correo ya existe en Company
+      // * Validar si el correo ya existe en Users
       const existEmailUser = await User.findOne({ emailManager: temporalCompany.emailManager.toLowerCase() })
       if (existEmailUser) {
         throw new Error('Email ya registrado')
@@ -191,9 +236,7 @@ const resolvers = {
       // * Guardar el email en minúscula
       temporalCompany.emailManager = temporalCompany.emailManager.toLowerCase();
 
-      // * Guardar registro en BD
-
-
+      // * Guardar registro en BD y enviar correo
       try {
         const savedTemporalCompany = await temporalCompany.save()
         const { emailManager, nameManager, validationCode } = savedTemporalCompany;
