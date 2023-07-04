@@ -196,15 +196,13 @@ const resolvers = {
         const savedTemporalCompany = await temporalCompany.save()
         const { emailManager, nameManager, validationCode } = savedTemporalCompany;
 
-
-        const response = await fetch("https://resimpletemporalexpress.onrender.com/api/send-email/validate-code", {
+        const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/validate-code`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             mail: emailManager,
-            subject: "Código de verificación",
             name: nameManager,
             verificationCode: validationCode
           }),

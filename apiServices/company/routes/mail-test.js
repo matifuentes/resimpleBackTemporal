@@ -3,19 +3,25 @@ import mailer from '../../../services/mailer/mailer.js'
 
 const router = express.Router()
 
-router.post('/validate-code', async (req, res) => {
+router.post('/test', async (req, res) => {
   const { mail, name, verificationCode } = req.body
 
   // * Agregar las options para el envío
   const mailOptions = {
     from: `ReSimple <${process.env.EMAIL_SENDER}>`,
     to: mail,
-    subject: 'Código de verificación',
-    template: 'validate-code',
+    subject: 'Mail de prueba',
+    template: 'pruebita',
     context: {
       name,
       verificationCode
-    }
+    },
+    attachments: [
+      {
+        filename: 'dummy1.pdf',
+        path: './pdfs/prueba.pdf'
+      }
+    ]
   }
 
   // * Envío las options al mailer
