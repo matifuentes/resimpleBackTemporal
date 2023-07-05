@@ -24,6 +24,12 @@ const userSchema = mongoose.Schema({
     min: 6,
     max: 255,
   },
+  role: {
+    type: String,
+    required: true,
+    enum: ['Invitado', 'Administrador', 'Representante Legal'],
+    default: 'Invitado',
+  },
   date: {
     type: Date,
     default: Date.now
