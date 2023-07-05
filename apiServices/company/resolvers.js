@@ -3,6 +3,7 @@ import Company from './models/Company.js'
 import User from './models/User.js'
 import UserCompany from './models/User-Company.js'
 import BaseLine from './models/Base-Line.js'
+import Role from './models/Role.js'
 import { } from '../../db.js'
 import bcrypt from 'bcrypt'
 import { validateRegister, validateLogin, validateResendValidationCode } from './validations/company.js'
@@ -169,6 +170,11 @@ const resolvers = {
   },
 
   Mutation: {
+    addRole: async (root, args) => {
+      const role = new Role({ ...args })
+
+      return await role.save()
+    },
     addBaseLine: async (root, args) => {
       const baseLine = new BaseLine({ ...args })
 

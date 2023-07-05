@@ -48,34 +48,6 @@ const typeDefs = gql`
     token: String!
   }
 
-  type Domiciliary {
-    codeSubCategory: String!
-    nameSubCategory: String!
-    codeClassificationMaterial: String!
-    nameClassificationMaterial: String!
-    codeMaterial: String!
-    nameMaterial: String!
-    fullCode: String!
-    tonDangerous: Float!
-    tonNotDangerous: Float!
-    priceDangerous: Float!
-    priceNotDangerous: Float!
-  }
-
-  type NoDomiciliary {
-    codeSubCategory: String!
-    nameSubCategory: String!
-    codeClassificationMaterial: String!
-    nameClassificationMaterial: String!
-    codeMaterial: String!
-    nameMaterial: String!
-    fullCode: String!
-    tonDangerous: Float!
-    tonNotDangerous: Float!
-    priceDangerous: Float!
-    priceNotDangerous: Float!
-  }
-
   input DomiciliaryInput {
     codeSubCategory: String!
     nameSubCategory: String!
@@ -115,6 +87,17 @@ const typeDefs = gql`
     pdfUrl: String
   }
 
+
+  type Role {
+    _id: ID!
+    nameRole: String!
+  }
+  
+  input PermissionInput {
+    namePermission: String!
+    uriPermission: String!
+  }
+
   type Query {
     companyCount: Int!
     allCompanies: [Company]!
@@ -148,6 +131,10 @@ const typeDefs = gql`
       domiciliary: [DomiciliaryInput]
       noDomiciliary: [NoDomiciliaryInput]
     ): BaseLine
+    addRole (
+      nameRole: String
+      permission: [PermissionInput]
+    ): Role
   }
 `
 
