@@ -86,7 +86,7 @@ const resolvers = {
             throw new Error('El email ya está registrado')
           }
 
-          // * Creaación de User y Company y User-Company
+          // * Creación de User y Company y User-Company
           const newUser = await user.save()
           const newCompany = await company.save()
 
@@ -99,6 +99,22 @@ const resolvers = {
             const userCompany = new UserCompany({ idUser: newUser._id, idCompany: newCompany._id })
 
             await userCompany.save()
+
+            // * Envío de mail de bienvenida
+            const { emailManager, nameManager } = newUser;
+
+            const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/welcome`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                mail: emailManager,
+                name: nameManager
+              }),
+            });
+
+            await response.json();
 
             // * Retornar nuevo registro en User
             return {
