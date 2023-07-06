@@ -3,7 +3,7 @@ export const CONTENIDO = {
     "nameManager": "George Fotinos",
     "emailManager": "gfotinos@resimple.cl",
     "rutCompany": "",
-    "registerType": "Real",
+    "registerType": "proyeccion",
     "period": 2022,
     "pdfUrl": "not url",
     "domiciliary": [

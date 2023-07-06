@@ -210,10 +210,10 @@ function generatePDF(PDF_data) {
     const date = `Santiago, ${day.toString().padStart(2, "0")} de ${month} de ${year}`; // 'Santiago, xx de xxx de 2023'
 
     const date_textWidth = doc.getStringUnitWidth(date) * fontSize_PDF;
-    const date_text_X = PAGE_WIDTH - MARGIN_RIGHT - date_textWidth;
-    doc.text(date, date_text_X, currentY);
+    const datePositionOn_X = PAGE_WIDTH - MARGIN_RIGHT - date_textWidth;
+    doc.text(date, datePositionOn_X, currentY);
     currentY += 15;
-
+    
     // ----- Dirigido a -----
     doc.text("Señor", MARGIN_LEFT, currentY);
     currentY += 12;
@@ -232,9 +232,9 @@ function generatePDF(PDF_data) {
     // ----- Certificate Title -----
     const certificateTitle = "CERTIFICADO DECLARACIÓN";
     const certificateTitle_textWidth = doc.getStringUnitWidth(certificateTitle) * fontSize_PDF;
-    const certificateTitle_text_X = (PAGE_WIDTH - certificateTitle_textWidth) / 2;
+    const certificateTitlePositionOn_X = (PAGE_WIDTH - certificateTitle_textWidth) / 2;
 
-    doc.text(certificateTitle, certificateTitle_text_X, currentY);
+    doc.text(certificateTitle, certificateTitlePositionOn_X, currentY);
     currentY += 20;
 
 
@@ -261,35 +261,36 @@ function generatePDF(PDF_data) {
     currentY += 12;
   }
 
-  const createRow = (numberOfColumns, withBoxes, data) => {
+  const createRowTotales = (numberOfColumns, withBoxes, data) => {
 
     const fontSize = 5;
-    const boxHeight = 15;
-    const widthRowTableTotalMinusBorders = TABLE_WIDTH - ((numberOfColumns - 1) * BORDER_WIDTH);
-    const sizeBoxesData = widthRowTableTotalMinusBorders * withBoxes;
-
-    let boxPositionOn_X = (widthRowTableTotalMinusBorders + MARGIN_LEFT) - (sizeBoxesData * numberOfColumns);
-    const centerTextVertically = currentY + (boxHeight / 2);
-
     doc.setFontSize(fontSize);
 
-    const boxTitleWith = 70;
-    const TitleBoxPositionOn_X = boxPositionOn_X - boxTitleWith - BORDER_WIDTH;
-    const title = 'Totales';
-    doc.setFillColor(220, 220, 220);
-    doc.rect(TitleBoxPositionOn_X, currentY, boxTitleWith, boxHeight, "F");
+    const boxHeight = 15;
+    const widthTableMinusBorders = TABLE_WIDTH - ((numberOfColumns - 1) * BORDER_WIDTH); // tamaño de tabla sin los bordes --> (tamaño_tabla - ((numero_columnas - 1) * tamaño_borde))
+    const sizeBoxesData = widthTableMinusBorders * withBoxes;
 
+    let boxPositionOn_X = (widthTableMinusBorders + MARGIN_LEFT) - (sizeBoxesData * numberOfColumns);
+    const verticalPositionText = currentY + (boxHeight / 2);
+
+    const boxTitleWith = 70;
+    const titleBoxPositionOn_X = boxPositionOn_X - boxTitleWith - BORDER_WIDTH;
+
+    doc.setFillColor(220, 220, 220);
+    doc.rect(titleBoxPositionOn_X, currentY, boxTitleWith, boxHeight, "F");
+    
+    const title = 'Totales';
     const textWidth = doc.getStringUnitWidth(title) * fontSize;
-    const textAlign = ((boxTitleWith - textWidth) / 2 + TitleBoxPositionOn_X) //textAlign -> Center
-    doc.text(title, textAlign, centerTextVertically + 2);
+    const titleHorizontalPositionText = ((boxTitleWith - textWidth) / 2 + titleBoxPositionOn_X) //textAlign -> Center
+    doc.text(title, titleHorizontalPositionText, verticalPositionText + 2);
 
     for (let i = 0; i < numberOfColumns; i++) {
       doc.setFillColor(220, 220, 220);
       doc.rect(boxPositionOn_X, currentY, sizeBoxesData, boxHeight, "F");
 
       const textWidth = doc.getStringUnitWidth(data[i]) * fontSize;
-      const textAlign = ((sizeBoxesData - textWidth) / 2 + boxPositionOn_X) //textAlign -> Center
-      doc.text(formatNumber(data[i]), textAlign, centerTextVertically + 2);
+      const horizontalPositionNumber = ((sizeBoxesData - textWidth) / 2 + boxPositionOn_X) //textAlign -> Center
+      doc.text(formatNumber(data[i]), horizontalPositionNumber, verticalPositionText + 2);
 
       boxPositionOn_X += sizeBoxesData + BORDER_WIDTH;
     }
@@ -371,11 +372,11 @@ function generatePDF(PDF_data) {
 
 
     // ----- Table body -----
-
     tableBody(registerType, data, 5, numberOfColumns, contentBoxesWidth, 15);
 
+    // ----- Table row total -----
     const rowTotal = isProjection ? [totalTonNotDangerous.toFixed(2), totalTonDangerous.toFixed(2)] : [sumTonNotDangerous.toFixed(2), '-', totalTonNotDangerous.toFixed(2), sumTonDangerous.toFixed(2), '-', totalTonDangerous.toFixed(2)];
-    createRow((isProjection ? 2 : 6), (isProjection ? 0.24 : 0.08), rowTotal)
+    createRowTotales((isProjection ? 2 : 6), (isProjection ? 0.24 : 0.08), rowTotal)
   }
 
   const paymentMethodsTable = (numberInstallments, date = 'xx-xx-xxxx', totalAmount) => {
@@ -410,6 +411,8 @@ function generatePDF(PDF_data) {
     }
   }
 
+
+
   // ----------------------------- Certificate PDF creation -----------------------------
 
   const currentDate = new Date();
@@ -438,16 +441,16 @@ function generatePDF(PDF_data) {
     doc.addPage(); // Se crea nueva pagina
     currentY = MARGIN_TOP + 20; // Se reinicia currentY
 
+
     // -- Title page 2 --
     const fontSizeTitle = 15;
     const titlePage2 = 'Resumen de Declaración'
     doc.setFontSize(fontSizeTitle);
     const textWidth = doc.getStringUnitWidth(titlePage2) * fontSizeTitle;
-    const textAlign = (PAGE_WIDTH - textWidth) / 2; //textAlign -> Center
-    doc.text(titlePage2, textAlign, currentY);
+    const horizontalPositionText = (PAGE_WIDTH - textWidth) / 2; //textAlign -> Center
+    doc.text(titlePage2, horizontalPositionText, currentY);
 
     currentY += 50;
-
 
     // -- tableTotal --
     createRowTable([
@@ -468,12 +471,12 @@ function generatePDF(PDF_data) {
     ], 21);
     currentY += 50;
 
-
-    paymentMethodsTable(4, 'xxx-xxx-xxx', (totalTonDangerous + totalTonNotDangerous).toFixed(2))
+    // -- Forma de pago --
+    paymentMethodsTable(4, 'xxx-xxx-xxx', (totalTonDangerous + totalTonNotDangerous).toFixed(2));
   }
 
 
-  currentY = PAGE_HEIGHT - 80
+  currentY = PAGE_HEIGHT - 80;
   CertificateFooter()
 
 
@@ -482,8 +485,8 @@ function generatePDF(PDF_data) {
   const formattedDate = `${day}${month}${year}${hours}${minutes}${seconds}`;
   // ID / Rut / Tipo documento / Fecha
   const nameFile = `${'IDCompany'}-${PDF_data.rutManager.replaceAll(/[.-]/g, '')}-${registerType}-${formattedDate}`
-  // const filePath = `./pdfs/${nameFile}.pdf`;
-  const filePath = `./pdfs/certificado.pdf`;
+  const filePath = `./pdfs/${nameFile}.pdf`;
+  // const filePath = `./pdfs/certificado.pdf`;
 
   fs.writeFile(filePath, doc.output(), function (error) {
     if (error) {
