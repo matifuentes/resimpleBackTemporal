@@ -338,7 +338,7 @@ function generatePDF(PDF_data) {
     createRowTable([
       ["Material", 7, (header2_widthTableMinusBorders * 0.52), [220, 220, 220]],
       ["No Peligroso", 7, (header2_widthTableMinusBorders * 0.24), [220, 220, 220]],
-      ["Peligroso", 7, (header2_widthTableMinusBorders * 0.24), [220, 220, 220]]
+      ["Peligrosos", 7, (header2_widthTableMinusBorders * 0.24), [220, 220, 220]]
     ], 19)
     currentY += BORDER_WIDTH + 19;  // --> BORDER_WIDTH + boxHeight
 
@@ -442,10 +442,10 @@ function generatePDF(PDF_data) {
     createRowTotales((isProjection ? 2 : 6), (isProjection ? 0.24 : 0.08), rowTotal)
   }
 
-  const paymentMethodsTable = (paymentDates, amountPerInstallment) => {
+  const paymentMethodsTable = (paymentDates, amountPerInstallment, fontSizeTable) => {
 
     // -- Header 1 Table --
-    createRowTable([['Forma de Pago', 11, TABLE_WIDTH, [220, 220, 220]]], 21);
+    createRowTable([['Forma de Pago', fontSizeTable, TABLE_WIDTH, [220, 220, 220]]], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     // -- Header 2 Table --
@@ -453,9 +453,9 @@ function generatePDF(PDF_data) {
     const sizeBoxes = header2_widthTableMinusBorders / 3;
 
     createRowTable([
-      ["N° Cuotas", 7, sizeBoxes, [220, 220, 220]],
-      ["Fecha", 7, sizeBoxes, [220, 220, 220]],
-      ["Total (UF)", 7, sizeBoxes, [220, 220, 220]]
+      ["N° Cuotas", fontSizeTable, sizeBoxes, [220, 220, 220]],
+      ["Fecha", fontSizeTable, sizeBoxes, [220, 220, 220]],
+      ["Total (UF)", fontSizeTable, sizeBoxes, [220, 220, 220]]
     ], 19);
     currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
@@ -464,15 +464,14 @@ function generatePDF(PDF_data) {
 
     for (let i = 0; i < paymentDates.length; i++) {
       createRowTable([
-        [(i + 1).toString(), 7, sizeBoxes, [236, 240, 241]],
-        [paymentDates[i], 7, sizeBoxes, [236, 240, 241]],
-        [amountPerInstallment, 7, sizeBoxes, [236, 240, 241]]
+        [(i + 1).toString(), fontSizeTable, sizeBoxes, [236, 240, 241]],
+        [paymentDates[i], fontSizeTable, sizeBoxes, [236, 240, 241]],
+        [amountPerInstallment, fontSizeTable, sizeBoxes, [236, 240, 241]]
       ], 19);
 
       currentY += 19 + BORDER_WIDTH; // --> boxHeight + BORDER_WIDTH
     }
   }
-
 
 
   // ----------------------------- Certificate PDF creation -----------------------------
@@ -500,6 +499,7 @@ function generatePDF(PDF_data) {
   currentY += 15;
 
 
+  const fontSizeTable = 9;
   if (!isProjection) {
     doc.addPage(); // Se crea nueva pagina
     currentY = MARGIN_TOP + 20; // Se reinicia currentY
@@ -508,7 +508,7 @@ function generatePDF(PDF_data) {
     const domiciliaryRates = sumOfRates.domiciliary;
 
     const paymentDates = [`31 / Ene / ${year}`,`31 / Mar / ${year}`,`31 / Jul / ${year}`, `30 / Sept / ${year}`];
-    const amountPerInstallment = ((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total) /paymentDates.length).toFixed(2);
+    const amountPerInstallment = formatNumber(((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total) /paymentDates.length).toFixed(2));
 
 
     // -- Title page 2 --
@@ -523,20 +523,20 @@ function generatePDF(PDF_data) {
 
     // -- tableTotal --
     createRowTable([
-      ["Total Domiciliaria (UF)", 9, 125,[220, 220, 220]],
-      [(domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2), 9, 125, [236, 240, 241]],
+      ["Total Domiciliaria (UF)", fontSizeTable, 125,[220, 220, 220]],
+      [formatNumber((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, 125, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["Total No Domiciliaria (UF)", 9, 125,[220, 220, 220]],
-      [(noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2), 9, 125, [236, 240, 241]],
+      ["Total No Domiciliaria (UF)", fontSizeTable, 125,[220, 220, 220]],
+      [formatNumber((noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, 125, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ['Valores Netos', 9, 125,[220, 220, 220]],
-      [amountPerInstallment, 9, 125, [236, 240, 241]],
+      ['Valores Netos', fontSizeTable, 125,[220, 220, 220]],
+      [amountPerInstallment, fontSizeTable, 125, [236, 240, 241]],
     ], 21);
     currentY += 33;
 
@@ -551,34 +551,34 @@ function generatePDF(PDF_data) {
     const tableRatesSizeBoxes = tableRates / 4;
 
     createRowTable([
-      ["Categoria", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      ["No Peligrosos (UF)", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      ["Peligrosos (UF)", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      ["Total (UF)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Categoria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["No Peligroso (UF)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Peligrosos (UF)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Total (UF)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      [domiciliaryRates.notDangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [domiciliaryRates.dangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      ["Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber(domiciliaryRates.notDangerous.total.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber(domiciliaryRates.dangerous.total.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["No Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      [noDomiciliaryRates.notDangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [noDomiciliaryRates.dangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      ["No Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber(noDomiciliaryRates.notDangerous.total.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber(noDomiciliaryRates.dangerous.total.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["Total", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      [(domiciliaryRates.notDangerous.total + noDomiciliaryRates.notDangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(domiciliaryRates.dangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2) , 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      ["Total", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber((domiciliaryRates.notDangerous.total + noDomiciliaryRates.notDangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.dangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2)), 9, tableRatesSizeBoxes, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH + 12;
 
@@ -590,7 +590,7 @@ function generatePDF(PDF_data) {
     
     // -- Forma de pago --
     currentY += 50;
-    paymentMethodsTable(paymentDates, amountPerInstallment);
+    paymentMethodsTable(paymentDates, amountPerInstallment, fontSizeTable);
 
     currentY = PAGE_HEIGHT - 80;
     CertificateFooter()
@@ -607,34 +607,34 @@ function generatePDF(PDF_data) {
     const tableRatesSizeBoxes = tableRates / 4;
 
     createRowTable([
-      ["Categoria", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      ["No Peligrosos (Ton)", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      ["Peligrosos (Ton)", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      ["Total (Ton)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Categoria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["No Peligroso (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Peligrosos (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Total (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
     ], 19);
     currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      [domiciliaryRates.notDangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [domiciliaryRates.dangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      ["Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber(domiciliaryRates.notDangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber(domiciliaryRates.dangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
     ], 19);
     currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["No Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      [noDomiciliaryRates.notDangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [noDomiciliaryRates.dangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      ["No Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber(noDomiciliaryRates.notDangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber(noDomiciliaryRates.dangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
     ], 19);
     currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      ["Total", 11, tableRatesSizeBoxes, [220, 220, 220]],
-      [(domiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.dangerous.total).toFixed(2) , 11, tableRatesSizeBoxes, [236, 240, 241]],
-      [(domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      ["Total", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
     ], 19);
     currentY += 19 + BORDER_WIDTH + 12;
 
