@@ -8,7 +8,7 @@ import { } from '../../db.js'
 import bcrypt from 'bcrypt'
 import { validateRegister, validateLogin, validateResendValidationCode } from './validations/company.js'
 import jwt from 'jsonwebtoken'
-import gen6digitsNumber from './utils.js'
+import { RutValidator, gen6digitsNumber } from './utils.js'
 import fetch from 'node-fetch'
 
 const resolvers = {
@@ -206,7 +206,7 @@ const resolvers = {
         const updatedTemporalCompany = await TemporalCompany.findOneAndUpdate(filter, update, { new: true });
         const { trying, emailManager, nameManager, validationCode } = updatedTemporalCompany;
 
-        const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/validate-code`, {
+        const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/resend-validate-code`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -237,6 +237,15 @@ const resolvers = {
       const { error } = validateRegister.validate(args, { abortEarly: false })
       if (error) {
         throw new Error(error.details[0].message)
+      }
+
+      // * Validar RUT Manager y Company
+      if (!RutValidator(temporalCompany.rutManager)) {
+        throw new Error('Rut Administrador con formato inválido')
+      }
+
+      if (!RutValidator(temporalCompany.rutCompany)) {
+        throw new Error('Rut Empresa con formato inválido')
       }
 
       // * Borrar el registro que coincida con el mail en la tabla TemporalCompany
