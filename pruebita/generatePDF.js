@@ -35,10 +35,29 @@ function generatePDF(PDF_data) {
 
   let currentY = MARGIN_TOP; // varible que indica donde se genera el elemento (box, texto) en el eje Y
 
-  let sumTonNotDangerous = 0;
-  let sumTonDangerous = 0;
-  let totalTonNotDangerous = 0;
-  let totalTonDangerous = 0;
+  const sumOfRates = {
+    noDomiciliary: {
+      notDangerous: {
+        numberOfTons: 0,
+        total: 0
+      },
+      dangerous: {
+        numberOfTons: 0,
+        total: 0
+      }
+    },
+    domiciliary: {
+      notDangerous: {
+        numberOfTons: 0,
+        total: 0
+      },
+      dangerous: {
+        numberOfTons: 0,
+        total: 0
+      }
+    }
+  }
+
 
   const formatNumber = (number) => {
     if (isNaN(number)) {
@@ -103,8 +122,8 @@ function generatePDF(PDF_data) {
     }
   }
 
-  const tableBody = (registerType, data, fontSize, numberOfColumns, boxesWidth, boxHeight) => {
-    // tableBody(registerType, data, fontSize, numberOfColumns, array de Width de columnas, boxHeight)
+  const tableBody = (isDomiciliary, isProjection, data, fontSize, numberOfColumns, boxesWidth, boxHeight) => {
+    // tableBody(es categoria domiciliaria (true, false), es de tipo proyecion (true, false), registerType, data, fontSize, numberOfColumns, array de Width de columnas, boxHeight)
 
     doc.setFontSize(fontSize);
 
@@ -122,14 +141,25 @@ function generatePDF(PDF_data) {
       const tonNotDangerous_priceNotDangerous = tonNotDangerous * priceNotDangerous;
       const tonDangerous_priceDangerous = tonDangerous * priceDangerous;
 
-      sumTonNotDangerous += tonNotDangerous;
-      sumTonDangerous += tonDangerous;
-      totalTonNotDangerous += tonNotDangerous_priceNotDangerous;
-      totalTonDangerous += tonDangerous_priceDangerous;
+
+      if (isDomiciliary) {
+        sumOfRates.domiciliary.notDangerous.numberOfTons += tonNotDangerous;
+        sumOfRates.domiciliary.notDangerous.total += tonNotDangerous_priceNotDangerous;
+
+        sumOfRates.domiciliary.dangerous.numberOfTons += tonDangerous;
+        sumOfRates.domiciliary.dangerous.total += tonDangerous_priceDangerous;
+
+      } else {
+        sumOfRates.noDomiciliary.notDangerous.numberOfTons += tonNotDangerous;
+        sumOfRates.noDomiciliary.notDangerous.total += tonNotDangerous_priceNotDangerous;
+
+        sumOfRates.noDomiciliary.dangerous.numberOfTons += tonDangerous;
+        sumOfRates.noDomiciliary.dangerous.total += tonDangerous_priceDangerous;
+      }
 
 
       let columnTexts = [];
-      if ('proyeccion' === registerType || 'correccion proyeccion' === registerType) {
+      if (isProjection) {
         columnTexts.push(
           nameSubCategory,
           nameClassificationMaterial,
@@ -213,7 +243,7 @@ function generatePDF(PDF_data) {
     const datePositionOn_X = PAGE_WIDTH - MARGIN_RIGHT - date_textWidth;
     doc.text(date, datePositionOn_X, currentY);
     currentY += 15;
-    
+
     // ----- Dirigido a -----
     doc.text("Señor", MARGIN_LEFT, currentY);
     currentY += 12;
@@ -278,7 +308,7 @@ function generatePDF(PDF_data) {
 
     doc.setFillColor(220, 220, 220);
     doc.rect(titleBoxPositionOn_X, currentY, boxTitleWith, boxHeight, "F");
-    
+
     const title = 'Totales';
     const textWidth = doc.getStringUnitWidth(title) * fontSize;
     const titleHorizontalPositionText = ((boxTitleWith - textWidth) / 2 + titleBoxPositionOn_X) //textAlign -> Center
@@ -296,8 +326,7 @@ function generatePDF(PDF_data) {
     }
   }
 
-  const createTable = (type, title, data) => {
-    const isProjection = 'proyeccion' === type || 'correccion proyeccion' === type;
+  const createTable = (isDomiciliary, isProjection, title, data) => {
 
 
     // ----- Table Header 1 -----
@@ -332,10 +361,10 @@ function generatePDF(PDF_data) {
         [["Clasificación", 7], ["Materiales", 7]],
         [["Materiales", 7]],
         [["Cantidad", 7], ["(Toneladas)", 6]],
-        [["Tarifa", 7], ["(UF)", 6]],
+        [["Tarifa", 7], ["(UF/Ton)", 6]],
         [["Total", 7], ["(UF)", 6]],
         [["Cantidad", 7], ["(Toneladas)", 6]],
-        [["Tarifa", 7], ["(UF)", 6]],
+        [["Tarifa", 7], ["(UF/Ton)", 6]],
         [["Total", 7], ["(UF)", 6]]
       )
     }
@@ -372,14 +401,48 @@ function generatePDF(PDF_data) {
 
 
     // ----- Table body -----
-    tableBody(registerType, data, 5, numberOfColumns, contentBoxesWidth, 15);
+    tableBody(isDomiciliary, isProjection, data, 5, numberOfColumns, contentBoxesWidth, 15);
 
     // ----- Table row total -----
-    const rowTotal = isProjection ? [totalTonNotDangerous.toFixed(2), totalTonDangerous.toFixed(2)] : [sumTonNotDangerous.toFixed(2), '-', totalTonNotDangerous.toFixed(2), sumTonDangerous.toFixed(2), '-', totalTonDangerous.toFixed(2)];
+
+    let rowTotal = [];
+
+    if (isDomiciliary) {
+      const domiciliaryRates = sumOfRates.domiciliary;
+
+      if (isProjection) {
+        rowTotal.push(domiciliaryRates.notDangerous.total.toFixed(2), domiciliaryRates.dangerous.total.toFixed(2));
+      } else {
+        rowTotal.push(
+          domiciliaryRates.notDangerous.numberOfTons.toFixed(2),
+          '-',
+          domiciliaryRates.notDangerous.total.toFixed(2),
+          domiciliaryRates.dangerous.numberOfTons.toFixed(2),
+          '-',
+          domiciliaryRates.dangerous.total.toFixed(2)
+        )
+      }
+    } else {
+      const noDomiciliaryRates = sumOfRates.noDomiciliary;
+
+      if (isProjection) {
+        rowTotal.push(noDomiciliaryRates.notDangerous.total.toFixed(2), noDomiciliaryRates.dangerous.total.toFixed(2));
+      } else {
+        rowTotal.push(
+          noDomiciliaryRates.notDangerous.numberOfTons.toFixed(2),
+          '-',
+          noDomiciliaryRates.notDangerous.total.toFixed(2),
+          noDomiciliaryRates.dangerous.numberOfTons.toFixed(2),
+          '-',
+          noDomiciliaryRates.dangerous.total.toFixed(2)
+        )
+      }
+    }
+
     createRowTotales((isProjection ? 2 : 6), (isProjection ? 0.24 : 0.08), rowTotal)
   }
 
-  const paymentMethodsTable = (numberInstallments, date = 'xx-xx-xxxx', totalAmount) => {
+  const paymentMethodsTable = (paymentDates, amountPerInstallment) => {
 
     // -- Header 1 Table --
     createRowTable([['Forma de Pago', 11, TABLE_WIDTH, [220, 220, 220]]], 21);
@@ -390,21 +453,20 @@ function generatePDF(PDF_data) {
     const sizeBoxes = header2_widthTableMinusBorders / 3;
 
     createRowTable([
-      ["N° Cuotas", 7, sizeBoxes,[220, 220, 220]],
-      ["Fecha", 7,sizeBoxes, [220, 220, 220]],
+      ["N° Cuotas", 7, sizeBoxes, [220, 220, 220]],
+      ["Fecha", 7, sizeBoxes, [220, 220, 220]],
       ["Total (UF)", 7, sizeBoxes, [220, 220, 220]]
     ], 19);
     currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
 
     // -- Body Table --
-    const amountPerInstallment = totalAmount / numberInstallments;
 
-    for (let i = 0; i < numberInstallments; i++) {
+    for (let i = 0; i < paymentDates.length; i++) {
       createRowTable([
-        [(i+1).toString(), 7, sizeBoxes, [236, 240, 241]],
-        ["Fecha Desconocida", 7, sizeBoxes, [236, 240, 241]],
-        [amountPerInstallment.toFixed(2), 7, sizeBoxes, [236, 240, 241]]
+        [(i + 1).toString(), 7, sizeBoxes, [236, 240, 241]],
+        [paymentDates[i], 7, sizeBoxes, [236, 240, 241]],
+        [amountPerInstallment, 7, sizeBoxes, [236, 240, 241]]
       ], 19);
 
       currentY += 19 + BORDER_WIDTH; // --> boxHeight + BORDER_WIDTH
@@ -423,23 +485,30 @@ function generatePDF(PDF_data) {
   const minutes = currentDate.getMinutes().toString().padStart(2, "0");
   const seconds = currentDate.getSeconds().toString().padStart(2, "0");
 
-  const registerType = PDF_data.registerType.normalize("NFD").replaceAll(/[\u0300-\u036f]/g, "").toLowerCase()
+  const registerType = PDF_data.registerType.normalize("NFD").replaceAll(/[\u0300-\u036f]/g, "").toLowerCase(); // real, real correccion, proyeccion, proyeccion correcion
+  const isProjection = 'proyeccion' === registerType || 'correccion proyeccion' === registerType;
 
   CertificateHeader('64a30e37b945e1778bbfdb8f', PDF_data.rutManager, PDF_data.registerType, currentDate)
   currentY += 40;
 
-  createTable(registerType, 'Categoría Domiciliaria', PDF_data.domiciliary)
+  createTable(true, isProjection, 'Categoría Domiciliaria', PDF_data.domiciliary)
 
   doc.addPage(); // Se crea nueva pagina
   currentY = MARGIN_TOP; // Se reinicia currentY
 
-  createTable(registerType, 'Categoría No Domiciliaria', PDF_data.noDomiciliary)
+  createTable(false, isProjection, 'Categoría No Domiciliaria', PDF_data.noDomiciliary)
   currentY += 15;
 
 
-  if ('real' === registerType || 'real proyeccion' === registerType) {
+  if (!isProjection) {
     doc.addPage(); // Se crea nueva pagina
     currentY = MARGIN_TOP + 20; // Se reinicia currentY
+
+    const noDomiciliaryRates = sumOfRates.noDomiciliary;
+    const domiciliaryRates = sumOfRates.domiciliary;
+
+    const paymentDates = [`31 / Ene / ${year}`,`31 / Mar / ${year}`,`31 / Jul / ${year}`, `30 / Sept / ${year}`];
+    const amountPerInstallment = ((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total) /paymentDates.length).toFixed(2);
 
 
     // -- Title page 2 --
@@ -455,29 +524,129 @@ function generatePDF(PDF_data) {
     // -- tableTotal --
     createRowTable([
       ["Total Domiciliaria (UF)", 9, 125,[220, 220, 220]],
-      [totalTonDangerous.toFixed(2), 9, 125, [236, 240, 241]],
+      [(domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2), 9, 125, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
       ["Total No Domiciliaria (UF)", 9, 125,[220, 220, 220]],
-      [totalTonNotDangerous.toFixed(2), 9, 125, [236, 240, 241]],
+      [(noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2), 9, 125, [236, 240, 241]],
     ], 21);
     currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
     createRowTable([
-      [`Total ${year} (UF)`, 9, 125,[220, 220, 220]],
-      [(totalTonDangerous + totalTonNotDangerous).toFixed(2), 9, 125, [236, 240, 241]],
+      ['Valores Netos', 9, 125,[220, 220, 220]],
+      [amountPerInstallment, 9, 125, [236, 240, 241]],
     ], 21);
+    currentY += 33;
+
+    doc.setFontSize(7);
+    doc.text('* Valores Netos', MARGIN_LEFT + 15, currentY);
+
     currentY += 50;
 
+
+    // -- Cuadro tarifas --
+    const tableRates = TABLE_WIDTH - ((4 - 1) * BORDER_WIDTH); // tamaño de tabla sin los bordes --> (tamaño_tabla - ((numero_columnas - 1) * tamaño_borde))
+    const tableRatesSizeBoxes = tableRates / 4;
+
+    createRowTable([
+      ["Categoria", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["No Peligrosos (UF)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Peligrosos (UF)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Total (UF)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+    ], 21);
+    currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      [domiciliaryRates.notDangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [domiciliaryRates.dangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 21);
+    currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["No Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      [noDomiciliaryRates.notDangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [noDomiciliaryRates.dangerous.total.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 21);
+    currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["Total", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      [(domiciliaryRates.notDangerous.total + noDomiciliaryRates.notDangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(domiciliaryRates.dangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2) , 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 21);
+    currentY += 21 + BORDER_WIDTH + 12;
+
+    doc.setFontSize(7);
+    const informativeTextWidth = doc.getStringUnitWidth('* Valores Netos') * 7;
+    const horizontalPositionInformativeText = (PAGE_WIDTH - informativeTextWidth) / 2; //textAlign -> Center
+    doc.text('* Valores Netos', horizontalPositionInformativeText, currentY);
+
+    
     // -- Forma de pago --
-    paymentMethodsTable(4, 'xxx-xxx-xxx', (totalTonDangerous + totalTonNotDangerous).toFixed(2));
+    currentY += 50;
+    paymentMethodsTable(paymentDates, amountPerInstallment);
+
+    currentY = PAGE_HEIGHT - 80;
+    CertificateFooter()
+    
+  } else {
+
+    currentY += 30;
+
+    const noDomiciliaryRates = sumOfRates.noDomiciliary;
+    const domiciliaryRates = sumOfRates.domiciliary;
+
+    // -- Cuadro tarifas --
+    const tableRates = TABLE_WIDTH - ((4 - 1) * BORDER_WIDTH); // tamaño de tabla sin los bordes --> (tamaño_tabla - ((numero_columnas - 1) * tamaño_borde))
+    const tableRatesSizeBoxes = tableRates / 4;
+
+    createRowTable([
+      ["Categoria", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["No Peligrosos (Ton)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Peligrosos (Ton)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Total (Ton)", 11, tableRatesSizeBoxes, [220, 220, 220]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      [domiciliaryRates.notDangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [domiciliaryRates.dangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["No Domiciliaria", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      [noDomiciliaryRates.notDangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [noDomiciliaryRates.dangerous.numberOfTons.toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["Total", 11, tableRatesSizeBoxes, [220, 220, 220]],
+      [(domiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.dangerous.total).toFixed(2) , 11, tableRatesSizeBoxes, [236, 240, 241]],
+      [(domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2), 11, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH + 12;
+
+    doc.setFontSize(7);
+    const informativeTextWidth = doc.getStringUnitWidth('* Valores Netos') * 7;
+    const horizontalPositionInformativeText = (PAGE_WIDTH - informativeTextWidth) / 2; //textAlign -> Center
+    doc.text('* Valores Netos', horizontalPositionInformativeText, currentY);
+
+    currentY = PAGE_HEIGHT - 65;
+    CertificateFooter()
   }
 
-
-  currentY = PAGE_HEIGHT - 80;
-  CertificateFooter()
 
 
   // --------------- Write File ---------------
