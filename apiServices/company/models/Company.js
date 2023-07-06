@@ -17,6 +17,17 @@ const companySchema = mongoose.Schema({
     required: true,
     enum: ['Micro', 'Pequeña', 'Mediana', 'Grande'],
   },
+  idRETC: {
+    type: String,
+    required: false,
+    max: 256,
+  },
+  statusRETC: {
+    type: String,
+    required: false,
+    max: 32,
+    enum: ['En proceso', 'Validado', 'Rechazado']
+  },
   date: {
     type: Date,
     default: Date.now

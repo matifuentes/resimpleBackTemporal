@@ -23,6 +23,8 @@ const typeDefs = gql`
     rutCompany: String
     nameCompany: String
     sizeCompany: String
+    idRETC: String
+    statusRETC: String
   }
 
   type User {
@@ -87,7 +89,6 @@ const typeDefs = gql`
     pdfUrl: String
   }
 
-
   type Role {
     _id: ID!
     nameRole: String!
@@ -135,6 +136,14 @@ const typeDefs = gql`
       nameRole: String
       permission: [PermissionInput]
     ): Role
+    updateCompany (
+      _id: ID!
+      rutCompany: String
+      nameCompany: String
+      sizeCompany: String
+      idRETC: String
+      statusRETC: String
+    ): Company
   }
 `
 
