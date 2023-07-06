@@ -1,7 +1,7 @@
 const regexRut = /^[0-9]{8,9}-[0-9kK]{1}$/;
 const weight = [2, 3, 4, 5, 6, 7];
 
-const RutValidator = (rut) => {
+const rutValidator = (rut) => {
   const rutLowerCase = rut.toLowerCase();
   const rutWithoutPoints = rutLowerCase.replaceAll('.', '');
 
@@ -32,4 +32,4 @@ const gen6digitsNumber = () => {
   return num;
 }
 
-export { RutValidator, gen6digitsNumber }
+export { rutValidator, gen6digitsNumber }
