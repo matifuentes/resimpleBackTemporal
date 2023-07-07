@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import { validateResendValidationCode } from "../../../validations/company.js"
 import { gen6digitsNumber } from "../../../utils.js"
 import TemporalCompany from "../../../models/TemporalCompany.js"

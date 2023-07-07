@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import TemporalCompany from "../../../models/TemporalCompany.js"
 import Company from "../../../models/Company.js"
 import User from "../../../models/User.js"

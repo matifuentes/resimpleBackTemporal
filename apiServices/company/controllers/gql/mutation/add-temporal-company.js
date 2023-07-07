@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import bcrypt from 'bcrypt'
 import { validateRegister } from '../../../validations/company.js'
 import { rutValidator, gen6digitsNumber } from "../../../utils.js"
