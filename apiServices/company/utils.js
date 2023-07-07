@@ -3,7 +3,7 @@ const weight = [2, 3, 4, 5, 6, 7];
 
 const rutValidator = (rut) => {
   const rutLowerCase = rut.toLowerCase();
-  const rutWithoutPoints = rutLowerCase.replaceAll('.', '');
+  const rutWithoutPoints = rutLowerCase.replace(/\./g, '');
 
   if (!regexRut.test(rutWithoutPoints)) {
     return false;
