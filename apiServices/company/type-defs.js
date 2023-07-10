@@ -36,6 +36,12 @@ const typeDefs = gql`
     password: String
   }
 
+  type ReturnUser {
+    status: String
+    emailManager: String
+    password: String
+  }
+
   type UserCompany {
     _id: ID!
     idUser: String
@@ -115,8 +121,7 @@ const typeDefs = gql`
       nameManager: String!
       emailManager: String!
       role: String
-      password: String!
-    ): User
+    ): ReturnUser
     addTemporalCompany (
       rutCompany: String
       nameCompany: String

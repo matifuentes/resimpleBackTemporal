@@ -32,8 +32,7 @@ const validateAddUser = Joi.object({
     'string.min': `"nameManager" El mínimo de caracteres es {#limit}`
   }),
   emailManager: Joi.string().min(6).max(255).required().email(),
-  role: Joi.string().min(6).max(255).required(),
-  password: Joi.string().min(6).max(1024).required()
+  role: Joi.string().min(6).max(255).required()
 })
 
 export { validateRegister, validateLogin, validateResendValidationCode, validateAddUser }
