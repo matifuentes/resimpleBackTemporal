@@ -32,6 +32,7 @@ const typeDefs = gql`
     rutManager: String
     nameManager: String
     emailManager: String
+    role: String
     password: String
   }
 
@@ -109,6 +110,13 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    addUser (
+      rutManager: String!
+      nameManager: String!
+      emailManager: String!
+      role: String
+      password: String!
+    ): User
     addTemporalCompany (
       rutCompany: String
       nameCompany: String

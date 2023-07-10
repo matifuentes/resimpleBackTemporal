@@ -25,4 +25,15 @@ const validateResendValidationCode = Joi.object({
   }),
 });
 
-export { validateRegister, validateLogin, validateResendValidationCode }
+const validateAddUser = Joi.object({
+  rutManager: Joi.string().max(12).required(),
+  nameManager: Joi.string().min(6).max(255).required().messages({
+    'string.empty': `"nameManager" No puede ser vacío`,
+    'string.min': `"nameManager" El mínimo de caracteres es {#limit}`
+  }),
+  emailManager: Joi.string().min(6).max(255).required().email(),
+  role: Joi.string().min(6).max(255).required(),
+  password: Joi.string().min(6).max(1024).required()
+})
+
+export { validateRegister, validateLogin, validateResendValidationCode, validateAddUser }

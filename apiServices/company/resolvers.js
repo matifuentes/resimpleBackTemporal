@@ -10,6 +10,7 @@ import controllerLogin from './controllers/gql/query/login.js'
 import controllerValidateCode from './controllers/gql/query/validate-code.js'
 
 // * Mutation Controllers
+import controllerAddUser from './controllers/gql/mutation/add-user.js'
 import controllerAddBaseLine from './controllers/gql/mutation/add-base-line.js'
 import controllerAddRole from './controllers/gql/mutation/add-role.js'
 import controllerAddTemporalCompany from './controllers/gql/mutation/add-temporal-company.js'
@@ -27,6 +28,7 @@ const resolvers = {
   },
 
   Mutation: {
+    addUser: controllerAddUser,
     addRole: controllerAddRole,
     addBaseLine: controllerAddBaseLine,
     resendValidationCode: controllerResendValidationCode,
