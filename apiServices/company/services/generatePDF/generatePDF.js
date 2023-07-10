@@ -1,7 +1,16 @@
 import fs from "fs";
+import path from "path";
 import { jsPDF } from "jspdf";
 import { CONTENIDO } from './ArrayPrueba.js';
 import { MontserratRegularbase64 } from './MontserratRegularBase64.js';
+import { generateRandomNamePDF } from '../../utils.js';
+import { fileURLToPath } from "url";
+import { BlobServiceClient } from '@azure/storage-blob';
+import dotenv from 'dotenv';
+
+
+// TODO: dejar dotenv global para GraphQL
+dotenv.config();
 
 // const fontFileContent = fs.readFileSync("C:/Users/DanielCarrasco/Music/resimpleBackTemporal/pruebita/MontserratRegular.ttf");
 // const fontBase64 = fontFileContent.toString("base64");
@@ -10,10 +19,18 @@ import { MontserratRegularbase64 } from './MontserratRegularBase64.js';
 // doc.setFont("MontserratRegular");
 
 function generatePDF(PDF_data) {
+
+  const userPassword = CONTENIDO.rutCompany.replace(/[.-]/g, '').substring(0, 4);
+
   const doc = new jsPDF({
     orientation: "p",
     unit: "pt",
-    format: "letter"
+    format: "letter",
+    encryption: {
+      userPassword: userPassword,
+      ownerPassword: undefined,
+      userPermissions: ["print"]
+    },
   });
 
   // Se agrega la fuente que se utilizara
@@ -58,6 +75,23 @@ function generatePDF(PDF_data) {
     }
   }
 
+
+  const uploadPDFToAzureStorage = async (pdfFilePath, nameFile_blobName) => {
+
+    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    const containerName = process.env.CONTAINER_NAME;
+
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+
+    // Cargar archivo PDF al contenedor
+    const blockBlobClient = containerClient.getBlockBlobClient(nameFile_blobName);
+
+    await blockBlobClient.uploadFile(pdfFilePath);
+
+    // Eliminar archivo local después de cargarlo en Azure Blob Storage
+    fs.unlinkSync(pdfFilePath);
+  }
 
   const formatNumber = (number) => {
     if (isNaN(number)) {
@@ -473,6 +507,44 @@ function generatePDF(PDF_data) {
     }
   }
 
+  const totalTON = () => {
+    const noDomiciliaryRates = sumOfRates.noDomiciliary;
+    const domiciliaryRates = sumOfRates.domiciliary;
+
+    const tableRates = TABLE_WIDTH - ((4 - 1) * BORDER_WIDTH); // tamaño de tabla sin los bordes --> (tamaño_tabla - ((numero_columnas - 1) * tamaño_borde))
+    const tableRatesSizeBoxes = tableRates / 4;
+
+    createRowTable([
+      ["Categoria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["No Peligroso (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Peligrosos (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      ["Total (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber(domiciliaryRates.notDangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber(domiciliaryRates.dangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["No Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber(noDomiciliaryRates.notDangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber(noDomiciliaryRates.dangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 19);
+    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+
+    createRowTable([
+      ["Total", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
+      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
+    ], 19);
+  }
 
   // ----------------------------- Certificate PDF creation -----------------------------
 
@@ -507,8 +579,8 @@ function generatePDF(PDF_data) {
     const noDomiciliaryRates = sumOfRates.noDomiciliary;
     const domiciliaryRates = sumOfRates.domiciliary;
 
-    const paymentDates = [`31 / Ene / ${year}`,`31 / Mar / ${year}`,`31 / Jul / ${year}`, `30 / Sept / ${year}`];
-    const amountPerInstallment = formatNumber(((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total) /paymentDates.length).toFixed(2));
+    const paymentDates = [`31 / Ene / ${year}`, `31 / Mar / ${year}`, `31 / Jul / ${year}`, `30 / Sept / ${year}`];
+    const amountPerInstallment = formatNumber(((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total) / paymentDates.length).toFixed(2));
 
 
     // -- Title page 2 --
@@ -522,28 +594,31 @@ function generatePDF(PDF_data) {
     currentY += 50;
 
     // -- tableTotal --
-    createRowTable([
-      ["Total Domiciliaria (UF)", fontSizeTable, 125,[220, 220, 220]],
-      [formatNumber((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, 125, [236, 240, 241]],
-    ], 21);
-    currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+    // createRowTable([
+    //   ["Total Domiciliaria (UF)", fontSizeTable, 125, [220, 220, 220]],
+    //   [formatNumber((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, 125, [236, 240, 241]],
+    // ], 21);
+    // currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
-    createRowTable([
-      ["Total No Domiciliaria (UF)", fontSizeTable, 125,[220, 220, 220]],
-      [formatNumber((noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, 125, [236, 240, 241]],
-    ], 21);
-    currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
+    // createRowTable([
+    //   ["Total No Domiciliaria (UF)", fontSizeTable, 125, [220, 220, 220]],
+    //   [formatNumber((noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, 125, [236, 240, 241]],
+    // ], 21);
+    // currentY += 21 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
 
-    createRowTable([
-      ['Valores Netos', fontSizeTable, 125,[220, 220, 220]],
-      [amountPerInstallment, fontSizeTable, 125, [236, 240, 241]],
-    ], 21);
-    currentY += 33;
+    // createRowTable([
+    //   ['Valores Netos', fontSizeTable, 125, [220, 220, 220]],
+    //   [amountPerInstallment, fontSizeTable, 125, [236, 240, 241]],
+    // ], 21);
+    // currentY += 33;
 
-    doc.setFontSize(7);
-    doc.text('* Valores Netos', MARGIN_LEFT + 15, currentY);
+    // doc.setFontSize(7);
+    // doc.text('* Valores Netos', MARGIN_LEFT + 15, currentY);
 
-    currentY += 50;
+    // -- Cuadro tarifas Toneladas--
+    totalTON()
+
+    currentY += 70;
 
 
     // -- Cuadro tarifas --
@@ -587,56 +662,22 @@ function generatePDF(PDF_data) {
     const horizontalPositionInformativeText = (PAGE_WIDTH - informativeTextWidth) / 2; //textAlign -> Center
     doc.text('* Valores Netos', horizontalPositionInformativeText, currentY);
 
-    
+
     // -- Forma de pago --
     currentY += 50;
     paymentMethodsTable(paymentDates, amountPerInstallment, fontSizeTable);
 
     currentY = PAGE_HEIGHT - 80;
     CertificateFooter()
-    
+
   } else {
 
     currentY += 30;
 
-    const noDomiciliaryRates = sumOfRates.noDomiciliary;
-    const domiciliaryRates = sumOfRates.domiciliary;
-
-    // -- Cuadro tarifas --
-    const tableRates = TABLE_WIDTH - ((4 - 1) * BORDER_WIDTH); // tamaño de tabla sin los bordes --> (tamaño_tabla - ((numero_columnas - 1) * tamaño_borde))
-    const tableRatesSizeBoxes = tableRates / 4;
-
-    createRowTable([
-      ["Categoria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-      ["No Peligroso (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-      ["Peligrosos (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-      ["Total (Ton)", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-    ], 19);
-    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
-
-    createRowTable([
-      ["Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-      [formatNumber(domiciliaryRates.notDangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-      [formatNumber(domiciliaryRates.dangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-    ], 19);
-    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
-
-    createRowTable([
-      ["No Domiciliaria", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-      [formatNumber(noDomiciliaryRates.notDangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-      [formatNumber(noDomiciliaryRates.dangerous.numberOfTons.toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-      [formatNumber((noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-    ], 19);
-    currentY += 19 + BORDER_WIDTH;  // --> boxHeight + BORDER_WIDTH
-
-    createRowTable([
-      ["Total", fontSizeTable, tableRatesSizeBoxes, [220, 220, 220]],
-      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-      [formatNumber((domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.dangerous.total).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-      [formatNumber((domiciliaryRates.notDangerous.numberOfTons + domiciliaryRates.dangerous.numberOfTons + noDomiciliaryRates.notDangerous.numberOfTons + noDomiciliaryRates.dangerous.numberOfTons).toFixed(2)), fontSizeTable, tableRatesSizeBoxes, [236, 240, 241]],
-    ], 19);
+    // -- Cuadro tarifas Toneladas--
+    totalTON()
     currentY += 19 + BORDER_WIDTH + 12;
+
 
     doc.setFontSize(7);
     const informativeTextWidth = doc.getStringUnitWidth('* Valores Netos') * 7;
@@ -650,20 +691,26 @@ function generatePDF(PDF_data) {
 
 
   // --------------- Write File ---------------
+  // Ruta del directorio para guardar los archivos PDF
+  const currentFilePath = fileURLToPath(import.meta.url);
+  const currentDirectory = path.dirname(currentFilePath);
 
+  const nameRandom = generateRandomNamePDF();
   const formattedDate = `${day}${month}${year}${hours}${minutes}${seconds}`;
-  // ID / Rut / Tipo documento / Fecha
-  const nameFile = `${'IDCompany'}-${PDF_data.rutManager.replaceAll(/[.-]/g, '')}-${registerType}-${formattedDate}`
-  const filePath = `./pdfs/${nameFile}.pdf`;
-  // const filePath = `./pdfs/certificado.pdf`;
 
-  fs.writeFile(filePath, doc.output(), function (error) {
-    if (error) {
-      console.error("Error al guardar el archivo:", error);
-    } else {
-      console.log("El archivo se ha guardado correctamente en:", filePath);
-    }
+  // Fecha / Tipo documento / nameRandom
+  const nameFile = `${formattedDate}-${registerType}-${nameRandom}.pdf`;
+  const urlpPDF = `${currentDirectory}/pdfs/${nameFile}`;
+
+  doc.save(urlpPDF)
+
+
+  // -- Guardar Archivo --
+
+  uploadPDFToAzureStorage(urlpPDF, nameFile).catch((error) => {
+    console.error(console.log(`ERROR: No se pudo guardar el PDF ${nameFile} en Storage`, error));
   });
+
 }
 
 generatePDF(CONTENIDO);
