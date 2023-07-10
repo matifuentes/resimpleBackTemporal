@@ -1,20 +1,17 @@
-import express from 'express'
 import mailer from '../../../services/mailer/mailer.js'
 
-const router = express.Router()
-
-router.post('/validate-code', async (req, res) => {
-  const { mail, subject, name, verificationCode } = req.body
+const controllerSendMailWelcome = async (req, res) => {
+  const { mail, name } = req.body
 
   // * Agregar las options para el envío
   const mailOptions = {
     from: `ReSimple <${process.env.EMAIL_SENDER}>`,
     to: mail,
-    subject,
-    template: 'validate-code',
+    subject: 'Confirmación de Inscripción',
+    template: 'welcome',
     context: {
-      name,
-      verificationCode
+      title: 'Confirmación de Inscripción',
+      name
     }
   }
 
@@ -39,6 +36,6 @@ router.post('/validate-code', async (req, res) => {
       message: 'Email enviado correctamente'
     }
   })
-});
+}
 
-export default router
+export default controllerSendMailWelcome

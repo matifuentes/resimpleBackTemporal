@@ -17,10 +17,16 @@ app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
 // * Routes
-import sendMail from './apiServices/company/routes/mail-validate-code.js'
+import sendMail from './apiServices/company/routes/send-mail.js'
+import mailTest from './apiServices/company/routes/mail-test.js'
 
 // * Route middlewares
-app.use('/api/send-email', validateTokenExpress, sendMail)
+// app.use('/api/send-email', validateTokenExpress, mailValidateCode)
+app.use('/api/send-email', sendMail)
+
+if (process.env.ENVIRONMENT == 'DEV') {
+    app.use('/api/send-email', mailTest)
+}
 
 app.get('/', (req, res) => {
     res.send('¡Hola Express!')

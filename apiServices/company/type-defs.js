@@ -13,11 +13,18 @@ const typeDefs = gql`
     trying: Int
   }
 
+  type ReturnValidationCode {
+    trying: Int
+    emailManager: String
+  }
+
   type Company {
     _id: ID!
     rutCompany: String
     nameCompany: String
     sizeCompany: String
+    idRETC: String
+    statusRETC: String
   }
 
   type User {
@@ -25,6 +32,7 @@ const typeDefs = gql`
     rutManager: String
     nameManager: String
     emailManager: String
+    role: String
     password: String
   }
 
@@ -41,34 +49,6 @@ const typeDefs = gql`
 
   type ReturnLogin {
     token: String!
-  }
-
-  type Domiciliary {
-    codeSubCategory: String!
-    nameSubCategory: String!
-    codeClassificationMaterial: String!
-    nameClassificationMaterial: String!
-    codeMaterial: String!
-    nameMaterial: String!
-    fullCode: String!
-    tonDangerous: Float!
-    tonNotDangerous: Float!
-    priceDangerous: Float!
-    priceNotDangerous: Float!
-  }
-
-  type NoDomiciliary {
-    codeSubCategory: String!
-    nameSubCategory: String!
-    codeClassificationMaterial: String!
-    nameClassificationMaterial: String!
-    codeMaterial: String!
-    nameMaterial: String!
-    fullCode: String!
-    tonDangerous: Float!
-    tonNotDangerous: Float!
-    priceDangerous: Float!
-    priceNotDangerous: Float!
   }
 
   input DomiciliaryInput {
@@ -110,6 +90,16 @@ const typeDefs = gql`
     pdfUrl: String
   }
 
+  type Role {
+    _id: ID!
+    nameRole: String!
+  }
+  
+  input PermissionInput {
+    namePermission: String!
+    uriPermission: String!
+  }
+
   type Query {
     companyCount: Int!
     allCompanies: [Company]!
@@ -120,6 +110,13 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    addUser (
+      rutManager: String!
+      nameManager: String!
+      emailManager: String!
+      role: String
+      password: String!
+    ): User
     addTemporalCompany (
       rutCompany: String
       nameCompany: String
@@ -128,7 +125,10 @@ const typeDefs = gql`
       nameManager: String
       emailManager: String
       password: String
-    ): TemporalCompany
+    ): ReturnValidationCode
+    resendValidationCode (
+      emailManager: String!
+    ): ReturnValidationCode
     addBaseLine (
       rutManager: String
       nameManager: String
@@ -140,6 +140,18 @@ const typeDefs = gql`
       domiciliary: [DomiciliaryInput]
       noDomiciliary: [NoDomiciliaryInput]
     ): BaseLine
+    addRole (
+      nameRole: String
+      permission: [PermissionInput]
+    ): Role
+    updateCompany (
+      _id: ID!
+      rutCompany: String
+      nameCompany: String
+      sizeCompany: String
+      idRETC: String
+      statusRETC: String
+    ): Company
   }
 `
 
