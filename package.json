@@ -6,9 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon ./apiServices/company/test-gql.js",
-    "start-express": "node index.js",
-    "start-gql": "node ./apiServices/company/test-gql.js",
-    "build": "webpack --config webpack.config.js"
+    "start": "node index.js",
+    "start-gql": "node ./apiServices/company/test-gql.js"
   },
   "keywords": [],
   "author": "",

@@ -55,8 +55,7 @@ const controllerAddUser = async (root, args) => {
 
     return {
       status: "Usuario creado con éxito",
-      emailManager,
-      password: unhashedPassword
+      emailManager
     };
   } catch (error) {
     console.log(error)

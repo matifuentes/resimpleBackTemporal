@@ -28,18 +28,16 @@ const typeDefs = gql`
   }
 
   type User {
-    _id: ID!
     rutManager: String
     nameManager: String
     emailManager: String
     role: String
-    password: String
+    status: String
   }
 
   type ReturnUser {
     status: String
     emailManager: String
-    password: String
   }
 
   type UserCompany {
@@ -122,6 +120,14 @@ const typeDefs = gql`
       emailManager: String!
       role: String
     ): ReturnUser
+    updateUser (
+      _id: ID!
+      rutManager: String
+      nameManager: String
+      emailManager: String
+      role: String
+      status: String
+    ): User
     addTemporalCompany (
       rutCompany: String
       nameCompany: String

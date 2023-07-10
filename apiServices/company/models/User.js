@@ -30,6 +30,12 @@ const userSchema = mongoose.Schema({
     enum: ['Invitado', 'Administrador', 'Representante Legal'],
     default: 'Invitado',
   },
+  status: {
+    type: String,
+    required: true,
+    enum: ['Pendiente', 'Activo', 'Inactivo'],
+    default: 'Activo'
+  },
   date: {
     type: Date,
     default: Date.now
