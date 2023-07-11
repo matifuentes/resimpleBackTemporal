@@ -52,6 +52,7 @@ const temporalCompanySchema = mongoose.Schema({
   },
   date: {
     type: Date,
+    expires: 240,
     default: Date.now
   }
 });

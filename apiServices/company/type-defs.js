@@ -25,6 +25,7 @@ const typeDefs = gql`
     sizeCompany: String
     idRETC: String
     statusRETC: String
+    statusValidationCompany: Boolean
   }
 
   type User {
@@ -162,6 +163,14 @@ const typeDefs = gql`
       sizeCompany: String
       idRETC: String
       statusRETC: String
+    ): Company
+    addCompanyRS (
+      rutCompany: String
+      nameCompany: String
+      sizeCompany: String
+      idRETC: String
+      statusRETC: String
+      statusValidationCompany: Boolean
     ): Company
   }
 `

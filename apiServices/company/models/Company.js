@@ -20,13 +20,19 @@ const companySchema = mongoose.Schema({
   idRETC: {
     type: String,
     required: false,
-    max: 256,
+    max: 256
   },
   statusRETC: {
     type: String,
     required: false,
     max: 32,
-    enum: ['En proceso', 'Validado', 'Rechazado']
+    enum: ['En proceso', 'Validado', 'Rechazado'],
+    default: 'En proceso'
+  },
+  statusValidationCompany: {
+    type: Boolean,
+    required: true,
+    default: false
   },
   date: {
     type: Date,

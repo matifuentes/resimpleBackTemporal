@@ -12,7 +12,7 @@ const controllerAddUser = async (root, args) => {
     throw new Error(error.details[0].message)
   }
 
-  // * Validar RUT Manager y Company
+  // * Validar RUT Manager
   if (!rutValidator(user.rutManager)) {
     throw new Error('Rut Administrador con formato inválido')
   }
@@ -25,7 +25,6 @@ const controllerAddUser = async (root, args) => {
 
   // * Generar password random
   const unhashedPassword = generatePassword()
-  console.log('PASSWORD GENERADA', unhashedPassword)
 
   // * Hash de password
   const salt = await bcrypt.genSalt(10);
