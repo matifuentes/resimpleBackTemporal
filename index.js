@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 })
 
 // * Iniciar server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORTEXPRESS || 3001;
 app.listen(PORT, () => {
     console.log(`Servidor a su servicio en el puerto: ${PORT}`)
 })

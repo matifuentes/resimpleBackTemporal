@@ -554,7 +554,7 @@ async function generatePDF(PDF_data) {
   const minutes = currentDate.getMinutes().toString().padStart(2, "0");
   const seconds = currentDate.getSeconds().toString().padStart(2, "0");
 
-  const registerType = PDF_data.registerType.normalize("NFD").replaceAll(/[\u0300-\u036f]/g, "").toLowerCase(); // real, real correccion, proyeccion, proyeccion correcion
+  const registerType = PDF_data.registerType.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); // real, real correccion, proyeccion, proyeccion correcion
   const isProjection = 'proyeccion' === registerType || 'correccion proyeccion' === registerType;
 
   CertificateHeader(PDF_data.idRETC, PDF_data.rutManager, PDF_data.registerType, currentDate)
