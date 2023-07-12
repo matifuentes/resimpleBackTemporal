@@ -6,10 +6,15 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon ./apiServices/company/test-gql.js",
+<<<<<<< HEAD
     "start-express": "node index.js",
     "start-gql": "node ./apiServices/company/test-gql.js",
     "build": "webpack --config webpack.config.js",
     "pdf": "node ./pruebita/pruebita.js"
+=======
+    "start": "node index.js",
+    "start-gql": "node ./apiServices/company/test-gql.js"
+>>>>>>> 3644c075867a3afc8546a967783c12cd51ed7cba
   },
   "keywords": [],
   "author": "",

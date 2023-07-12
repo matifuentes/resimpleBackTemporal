@@ -25,15 +25,20 @@ const typeDefs = gql`
     sizeCompany: String
     idRETC: String
     statusRETC: String
+    statusValidationCompany: Boolean
   }
 
   type User {
-    _id: ID!
     rutManager: String
     nameManager: String
     emailManager: String
     role: String
-    password: String
+    status: String
+  }
+
+  type ReturnUser {
+    status: String
+    emailManager: String
   }
 
   type UserCompany {
@@ -115,7 +120,14 @@ const typeDefs = gql`
       nameManager: String!
       emailManager: String!
       role: String
-      password: String!
+    ): ReturnUser
+    updateUser (
+      _id: ID!
+      rutManager: String
+      nameManager: String
+      emailManager: String
+      role: String
+      status: String
     ): User
     addTemporalCompany (
       rutCompany: String
@@ -151,6 +163,14 @@ const typeDefs = gql`
       sizeCompany: String
       idRETC: String
       statusRETC: String
+    ): Company
+    addCompanyRS (
+      rutCompany: String
+      nameCompany: String
+      sizeCompany: String
+      idRETC: String
+      statusRETC: String
+      statusValidationCompany: Boolean
     ): Company
   }
 `

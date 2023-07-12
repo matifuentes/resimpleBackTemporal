@@ -6,16 +6,13 @@ import bcrypt from 'bcrypt'
 const controllerAddUser = async (root, args) => {
   const user = new User({ ...args })
 
-  // * Generar password random
-  console.log('PASSWORD GENERADA', generatePassword())
-
   // * Validar campos
   const { error } = validateAddUser.validate(args, { abortEarly: false })
   if (error) {
     throw new Error(error.details[0].message)
   }
 
-  // * Validar RUT Manager y Company
+  // * Validar RUT Manager
   if (!rutValidator(user.rutManager)) {
     throw new Error('Rut Administrador con formato inválido')
   }
@@ -26,14 +23,43 @@ const controllerAddUser = async (root, args) => {
     throw new Error('El email ya está registrado')
   }
 
+  // * Generar password random
+  const unhashedPassword = generatePassword()
+
   // * Hash de password
   const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt)
+  user.password = await bcrypt.hash(unhashedPassword, salt)
 
   // * Guardar el mail en minúscula
   user.emailManager = user.emailManager.toLowerCase();
 
-  return await user.save()
+  // * Guardar registro en BD y enviar correo
+  try {
+    const savedUser = await user.save()
+    const { emailManager, nameManager } = savedUser;
+
+    const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/add-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mail: emailManager,
+        name: nameManager,
+        password: unhashedPassword
+      }),
+    });
+
+    await response.json();
+
+    return {
+      status: "Usuario creado con éxito",
+      emailManager
+    };
+  } catch (error) {
+    console.log(error)
+    throw new Error(error)
+  }
 }
 
 export default controllerAddUser

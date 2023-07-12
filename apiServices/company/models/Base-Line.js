@@ -134,7 +134,7 @@ const baseLineSchema = mongoose.Schema({
   registerType: {
     type: String,
     required: true,
-    enum: ['Proyección', 'Rectificación'],
+    enum: ['Proyección', 'Corrección Proyección', 'Real', 'Corrección Real'],
   },
   period: {
     type: Number,
