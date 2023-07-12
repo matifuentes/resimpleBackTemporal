@@ -4,6 +4,7 @@ import Company from '../../../models/Company.js'
 import generatePDF from '../../../services/generatePDF/generatePDF.js'
 import fs from 'fs'
 import path from 'path'
+import fetch from 'node-fetch';
 
 //TODO: Falta agregar validaciones
 const controllerAddBaseLine = async (root, args) => {
