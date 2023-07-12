@@ -18,7 +18,7 @@ dotenv.config();
 // doc.addFont("MontserratRegular.woff", "MontserratRegular");
 // doc.setFont("MontserratRegular");
 
-function generatePDF(PDF_data) {
+async function generatePDF(PDF_data) {
 
   const userPassword = CONTENIDO.rutCompany.replace(/[.-]/g, '').substring(0, 4);
 
@@ -706,11 +706,16 @@ function generatePDF(PDF_data) {
 
 
   // -- Guardar Archivo --
-
-  uploadPDFToAzureStorage(urlpPDF, nameFile).catch((error) => {
-    console.error(console.log(`ERROR: No se pudo guardar el PDF ${nameFile} en Storage`, error));
+  let isUploaded = null;
+  await uploadPDFToAzureStorage(urlpPDF, nameFile).then(() => {
+    isUploaded = true;
+  })
+  .catch((error) => {
+    isUploaded = false;
   });
 
+  return {nameFile, isUploaded};
 }
 
-generatePDF(CONTENIDO);
+const asd = await generatePDF(CONTENIDO);
+console.log(asd);
