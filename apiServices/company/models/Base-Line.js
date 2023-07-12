@@ -131,6 +131,11 @@ const baseLineSchema = mongoose.Schema({
     required: true,
     max: 12,
   },
+  idRETC: {
+    type: String,
+    required: true,
+    max: 64,
+  },
   registerType: {
     type: String,
     required: true,
@@ -142,7 +147,13 @@ const baseLineSchema = mongoose.Schema({
   },
   pdfUrl: {
     type: String,
-    required: false,
+    required: true,
+    default: null,
+  },
+  isUploaded: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
   domiciliary: [Domiciliary],
   noDomiciliary: [NoDomiciliary],

@@ -84,14 +84,14 @@ const typeDefs = gql`
     priceNotDangerous: Float!
   }
 
-  type BaseLine {
-    _id: ID!
-    rutManager: String!
-    nameManager: String!
-    emailManager: String!
-    rutCompany: String!
-    registerType: String!
-    period: Int!
+  type ReturnBaseLine {
+    _id: ID
+    rutManager: String
+    nameManager: String
+    emailManager: String
+    rutCompany: String
+    registerType: String
+    period: Int
     pdfUrl: String
   }
 
@@ -142,16 +142,16 @@ const typeDefs = gql`
       emailManager: String!
     ): ReturnValidationCode
     addBaseLine (
+      idUser: String
       rutManager: String
       nameManager: String
       emailManager: String
-      rutCompany: String
+      idCompany: String
       registerType: String
       period: Int
-      pdfUrl: String
       domiciliary: [DomiciliaryInput]
       noDomiciliary: [NoDomiciliaryInput]
-    ): BaseLine
+    ): ReturnBaseLine
     addRole (
       nameRole: String
       permission: [PermissionInput]

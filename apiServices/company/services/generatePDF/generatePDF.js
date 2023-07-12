@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { jsPDF } from "jspdf";
-import { CONTENIDO } from './ArrayPrueba.js';
 import { MontserratRegularbase64 } from './MontserratRegularBase64.js';
 import { generateRandomNamePDF } from '../../utils.js';
 import { fileURLToPath } from "url";
@@ -20,7 +19,9 @@ dotenv.config();
 
 async function generatePDF(PDF_data) {
 
-  const userPassword = CONTENIDO.rutCompany.replace(/[.-]/g, '').substring(0, 4);
+  // console.log('PDF DATA', PDF_data)
+
+  const userPassword = PDF_data.rutCompany.replace(/[.-]/g, '').substring(0, 4);
 
   const doc = new jsPDF({
     orientation: "p",
@@ -88,9 +89,6 @@ async function generatePDF(PDF_data) {
     const blockBlobClient = containerClient.getBlockBlobClient(nameFile_blobName);
 
     await blockBlobClient.uploadFile(pdfFilePath);
-
-    // Eliminar archivo local después de cargarlo en Azure Blob Storage
-    fs.unlinkSync(pdfFilePath);
   }
 
   const formatNumber = (number) => {
@@ -559,7 +557,7 @@ async function generatePDF(PDF_data) {
   const registerType = PDF_data.registerType.normalize("NFD").replaceAll(/[\u0300-\u036f]/g, "").toLowerCase(); // real, real correccion, proyeccion, proyeccion correcion
   const isProjection = 'proyeccion' === registerType || 'correccion proyeccion' === registerType;
 
-  CertificateHeader('64a30e37b945e1778bbfdb8f', PDF_data.rutManager, PDF_data.registerType, currentDate)
+  CertificateHeader(PDF_data.idRETC, PDF_data.rutManager, PDF_data.registerType, currentDate)
   currentY += 40;
 
   createTable(true, isProjection, 'Categoría Domiciliaria', PDF_data.domiciliary)
@@ -710,12 +708,11 @@ async function generatePDF(PDF_data) {
   await uploadPDFToAzureStorage(urlpPDF, nameFile).then(() => {
     isUploaded = true;
   })
-  .catch((error) => {
-    isUploaded = false;
-  });
+    .catch((error) => {
+      isUploaded = false;
+    });
 
-  return {nameFile, isUploaded};
+  return { nameFile, isUploaded };
 }
 
-const asd = await generatePDF(CONTENIDO);
-console.log(asd);
+export default generatePDF;
