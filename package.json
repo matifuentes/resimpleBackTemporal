@@ -6,13 +6,21 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon ./apiServices/company/test-gql.js",
+<<<<<<< HEAD
+    "start-express": "node index.js",
+    "start-gql": "node ./apiServices/company/test-gql.js",
+    "build": "webpack --config webpack.config.js",
+    "pdf": "node ./pruebita/pruebita.js"
+=======
     "start": "node index.js",
     "start-gql": "node ./apiServices/company/test-gql.js"
+>>>>>>> 3644c075867a3afc8546a967783c12cd51ed7cba
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/storage-blob": "^12.14.0",
     "@hapi/joi": "^17.1.1",
     "apollo-server": "^3.12.0",
     "bcrypt": "^5.1.0",
