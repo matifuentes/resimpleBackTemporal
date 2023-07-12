@@ -710,6 +710,8 @@ async function generatePDF(PDF_data) {
   })
     .catch((error) => {
       isUploaded = false;
+      console.log('ERROR GENERATE PDF', error)
+      throw new Error(error)
     });
 
   return { nameFile, isUploaded };
