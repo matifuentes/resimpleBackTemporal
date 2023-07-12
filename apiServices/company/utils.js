@@ -49,7 +49,7 @@ const generatePassword = () => {
 // * Generador de nombre PDF
 const generateRandomNamePDF = () => {
   var length = 20,
-    charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_",
+    charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_",
     retVal = "";
   for (var i = 0, n = charset.length; i < length; ++i) {
     retVal += charset.charAt(Math.floor(Math.random() * n));
