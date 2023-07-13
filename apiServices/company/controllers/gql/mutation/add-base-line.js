@@ -47,15 +47,15 @@ const controllerAddBaseLine = async (root, args) => {
   // * Enviar mail
   const { emailManager, nameManager } = baseLine;
 
-  const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/certificado-declaracion`, {
+  const response = await fetch(`${process.env.ENVIRONMENT_URL}/api/send-email/welcome`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       mail: emailManager,
-      name: nameManager,
-      pdf: genPDF.nameFile
+      name: nameManager
+      // pdf: genPDF.nameFile
     }),
   });
 
