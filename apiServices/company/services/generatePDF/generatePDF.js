@@ -79,16 +79,25 @@ async function generatePDF(PDF_data) {
 
   const uploadPDFToAzureStorage = async (pdfFilePath, nameFile_blobName) => {
 
+    console.log("ENTRE A UPLOAD AZURE FUNCTION")
+
     const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
     const containerName = process.env.CONTAINER_NAME;
 
+    console.log("CONNECTION STRING", connectionString)
+    console.log("CONTAINER NAME", containerName)
+
     const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    console.log("CONEXION CON BLOB EXITOSA")
     const containerClient = blobServiceClient.getContainerClient(containerName);
+    console.log("CONEXION CON CONTAINER EXITOSA")
 
     // Cargar archivo PDF al contenedor
     const blockBlobClient = containerClient.getBlockBlobClient(nameFile_blobName);
+    console.log("SUPER EXITOSA")
 
     await blockBlobClient.uploadFile(pdfFilePath);
+    console.log("SE SUBIO EL ARCHIVO FINAL FINAL")
   }
 
   const formatNumber = (number) => {
@@ -557,6 +566,9 @@ async function generatePDF(PDF_data) {
   const registerType = PDF_data.registerType.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); // real, real correccion, proyeccion, proyeccion correcion
   const isProjection = 'proyeccion' === registerType || 'correccion proyeccion' === registerType;
 
+  console.log('REGISTER TYPE', registerType)
+  console.log('IS PROJECTION', isProjection)
+
   CertificateHeader(PDF_data.idRETC, PDF_data.rutManager, PDF_data.registerType, currentDate)
   currentY += 40;
 
@@ -581,6 +593,7 @@ async function generatePDF(PDF_data) {
     const amountPerInstallment = formatNumber(((domiciliaryRates.notDangerous.total + domiciliaryRates.dangerous.total + noDomiciliaryRates.notDangerous.total + noDomiciliaryRates.dangerous.total) / paymentDates.length).toFixed(2));
 
 
+    console.log("FINALIZAR PAGINA 1")
     // -- Title page 2 --
     const fontSizeTitle = 15;
     const titlePage2 = 'Resumen de Declaración'
@@ -618,7 +631,7 @@ async function generatePDF(PDF_data) {
 
     currentY += 70;
 
-
+    console.log("TITULO PAGINA 2")
     // -- Cuadro tarifas --
     const tableRates = TABLE_WIDTH - ((4 - 1) * BORDER_WIDTH); // tamaño de tabla sin los bordes --> (tamaño_tabla - ((numero_columnas - 1) * tamaño_borde))
     const tableRatesSizeBoxes = tableRates / 4;
@@ -660,7 +673,7 @@ async function generatePDF(PDF_data) {
     const horizontalPositionInformativeText = (PAGE_WIDTH - informativeTextWidth) / 2; //textAlign -> Center
     doc.text('* Valores Netos', horizontalPositionInformativeText, currentY);
 
-
+    console.log("CUADRO TARIFAS")
     // -- Forma de pago --
     currentY += 50;
     paymentMethodsTable(paymentDates, amountPerInstallment, fontSizeTable);
@@ -687,7 +700,7 @@ async function generatePDF(PDF_data) {
   }
 
 
-
+  console.log("FORMA DE PAGO Y CUADRO TARIFAS TONELADA")
   // --------------- Write File ---------------
   // Ruta del directorio para guardar los archivos PDF
   const currentFilePath = fileURLToPath(import.meta.url);
@@ -707,6 +720,7 @@ async function generatePDF(PDF_data) {
   let isUploaded = null;
   await uploadPDFToAzureStorage(urlpPDF, nameFile).then(() => {
     isUploaded = true;
+    console.log("SUBIO A AZURE")
   })
     .catch((error) => {
       isUploaded = false;
