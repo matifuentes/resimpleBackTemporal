@@ -691,14 +691,14 @@ async function generatePDF(PDF_data) {
   // --------------- Write File ---------------
   // Ruta del directorio para guardar los archivos PDF
   const currentFilePath = fileURLToPath(import.meta.url);
-  const currentDirectory = path.dirname(currentFilePath);
+  //const currentDirectory = path.dirname(currentFilePath);
 
   const nameRandom = generateRandomNamePDF();
   const formattedDate = `${day}${month}${year}${hours}${minutes}${seconds}`;
 
   // Fecha / Tipo documento / nameRandom
   const nameFile = `${formattedDate}-${registerType}-${nameRandom}.pdf`;
-  const urlpPDF = `${currentDirectory}/pdfs/${nameFile}`;
+  const urlpPDF = `./apiServices/company/services/generatePDF/pdfs/${nameFile}`;
 
   doc.save(urlpPDF)
 
