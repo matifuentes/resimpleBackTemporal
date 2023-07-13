@@ -54,8 +54,8 @@ const controllerAddBaseLine = async (root, args) => {
     },
     body: JSON.stringify({
       mail: emailManager,
-      name: nameManager
-      //pdf: genPDF.nameFile
+      name: nameManager,
+      pdf: genPDF.nameFile
     }),
   });
 

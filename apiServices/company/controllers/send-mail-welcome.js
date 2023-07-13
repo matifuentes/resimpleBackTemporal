@@ -2,7 +2,7 @@ import mailer from '../../../services/mailer/mailer.js'
 //import path from 'path'
 
 const controllerSendMailWelcome = async (req, res) => {
-  const { mail, name } = req.body
+  const { mail, name, pdf } = req.body
 
   // * Agregar las options para el envío
   const mailOptions = {
@@ -17,7 +17,7 @@ const controllerSendMailWelcome = async (req, res) => {
     attachments: [
       {
         filename: 'CERTIFICADO-DECLARACION.pdf',
-        path: `./apiServices/company/services/generatePDF/pdfs/dummy.pdf`
+        path: `./apiServices/company/services/generatePDF/pdfs/${pdf}`
       }
     ]
   }
