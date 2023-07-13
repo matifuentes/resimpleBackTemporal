@@ -55,14 +55,14 @@ const controllerAddBaseLine = async (root, args) => {
     body: JSON.stringify({
       mail: emailManager,
       name: nameManager
-      // pdf: genPDF.nameFile
+      //pdf: genPDF.nameFile
     }),
   });
 
   await response.json();
 
   // * Borrar PDF de carpeta PDFS
-  fs.unlinkSync(`${path.resolve()}/apiServices/company/services/generatePDF/pdfs/${genPDF.nameFile}`);
+  //fs.unlinkSync(`${path.resolve()}/apiServices/company/services/generatePDF/pdfs/${genPDF.nameFile}`);
 
   return await baseLine.save()
 }
